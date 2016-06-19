@@ -20,7 +20,6 @@ class MessPlugin implements Plugin<Project> {
                             return
                         }
 
-                        Map<String, List<String>> components
 
                         boolean hasProcessResourcesExecuted = false
                         output.processResources.doLast {
@@ -29,21 +28,15 @@ class MessPlugin implements Plugin<Project> {
                             }
                             hasProcessResourcesExecuted = true
 
-                            RetrieveComponentTask retrieveTask = project.tasks.create(name: "retrieveComponentFor${variant.name.capitalize()}",
-                                    type: RetrieveComponentTask) {
-                                apkVariant = variant
-                            }
-                            retrieveTask.execute()
-                            components = retrieveTask.getComponents()
+                            def aaptRules = "build/intermediates/proguard-rules/${variant.dirName}/aapt_rules.txt"
+                            project.file(aaptRules).text = ""
                         }
 
                         proguardTask.doLast {
                             RewriteComponentTask rewriteTask = project.tasks.create(name: "rewriteComponentFor${variant.name.capitalize()}",
-                                    type: RewriteComponentTask
-                            ) {
+                                    type: RewriteComponentTask) {
                                 apkVariant = variant
                                 variantOutput = output
-                                allComponents = components
                             }
                             rewriteTask.execute()
                         }

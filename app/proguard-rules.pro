@@ -36,6 +36,9 @@
 -renamesourcefileattribute SourceFile
 -keepattributes SourceFile,LineNumberTable
 
+# 除了me.ele 其他都不混淆
+-keep class !me.ele.**
+
 -keepclassmembers,allowoptimization enum * {
       public static **[] values();
       public static ** valueOf(java.lang.String);
