@@ -3,6 +3,8 @@ package me.ele.mess
 import com.android.build.gradle.api.ApkVariant
 import com.android.build.gradle.api.BaseVariantOutput
 import com.android.build.gradle.tasks.ProcessAndroidResources
+import groovy.xml.QName
+import groovy.xml.XmlUtil
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
@@ -14,9 +16,6 @@ class RewriteComponentTask extends DefaultTask {
 
     @Input
     BaseVariantOutput variantOutput
-
-    @Input
-    Map<String, List<String>> allComponents
 
     @TaskAction
     void rewrite() {
@@ -33,87 +32,118 @@ class RewriteComponentTask extends DefaultTask {
             }
         }
 
-        map.each { k, v ->
-            if (allComponents.containsKey(k)) {
-                List<String> layouts = allComponents.get(k)
-                layouts.each { layout ->
-                    String realPath
-                    if (layout.startsWith("res")) {
-                        realPath = getResPath(layout)
-                    } else {
-                        realPath = variantOutput.processManifest.manifestOutputFile
-                    }
-                    writeLine(realPath, k, v)
+        replaceManifest(map, variantOutput.processManifest.manifestOutputFile)
+
+        getResDir().listFiles().each { layoutFile -> replaceLayout(map, layoutFile) }
+
+        getMenuDir().listFiles().each { menuFile -> replaceLayout(map, menuFile) }
+
+
+        ProcessAndroidResources processTask = variantOutput.processResources
+        processTask.state.executed = false
+        processTask.execute()
+    }
+
+    void replaceLayout(Map<String, String> map, File layoutFile) {
+        Node oldNode = (new XmlParser()).parse(layoutFile)
+        Node newNode = null
+        map.each { oldStr, newStr ->
+            if (oldNode.name().equals(oldStr)) {
+                newNode = new Node(oldNode.parent(), newStr, oldNode.attributes(), oldNode.value);
+            }
+            newNode?.attributes().each { k, v ->
+                if (v.equals(oldStr)) {
+                    newNode.attributes().put(k, newStr);
                 }
             }
         }
 
-        File menuDir = new File(getMenuPath())
-        if (menuDir.exists()) {
-            map.each { k, v ->
-                menuDir.eachFile { File file ->
-                    boolean hasWritten = false
-                    file.eachLine { String line ->
-                        if (line.contains(k) && !hasWritten) {
-                            hasWritten = true
-                            writeLine(file.absolutePath, k, v)
+        if (!newNode) {
+            newNode = oldNode
+        }
+
+        map.each { oldStr, newStr ->
+            getAllNode(newNode).each { Node child ->
+
+                child.attributes().each { k, v ->
+                    if (v.equals(oldStr)) {
+                        child.attributes().put(k, newStr);
+                    }
+                }
+
+                if (child.name().equals(oldStr)) {
+                    Node newChild = new Node(child.parent(), newStr, child.attributes(), child.value);
+                    newChild.attributes().each { k, v ->
+                        if (v.equals(oldStr)) {
+                            newChild.attributes().put(k, newStr);
+                        }
+                    }
+
+                    child.parent().remove(child)
+                }
+            }
+        }
+
+        if (newNode) {
+            layoutFile.text = XmlUtil.serialize(newNode)
+        }
+    }
+
+    List<Node> getAllNode(Node node) {
+        List<Node> list = new ArrayList<>()
+        node?.children()?.each { Node child ->
+            if (!child.children().empty) {
+                list.addAll(getAllNode(child))
+            }
+            list.add(child)
+        }
+        return list
+    }
+
+    void replaceManifest(Map<String, String> map, File manifestFile) {
+        Node node = (new XmlParser()).parse(manifestFile)
+
+        Node application = null
+
+        node.getAt(new QName('application')).each { Node child ->
+            application = child
+            child.attributes().each { k, v ->
+                map.each { oldStr, newStr ->
+                    if (v.equals(oldStr)) {
+                        child.attributes().put(k, newStr);
+                    }
+                }
+            }
+        }
+
+
+        String[] array = ['activity', 'receiver', 'service', 'provider', 'activity-alias']
+        array.each { tag ->
+            application.getAt(new QName(tag)).each { Node child ->
+                child.attributes().each { k, v ->
+                    map.each { oldStr, newStr ->
+                        if (v.equals(oldStr)) {
+                            child.attributes().put(k, newStr)
                         }
                     }
                 }
             }
         }
 
-        ProcessAndroidResources processTask = variantOutput.processResources
-        processTask.state.executed = false
-        processTask.execute()
-
-        def shrinkResourcesTask = project.tasks.findByName("transformClassesWithShrinkResFor${apkVariant.name.capitalize()}")
-        if (shrinkResourcesTask) {
-            shrinkResourcesTask.state.executed = false
-            shrinkResourcesTask.execute()
-        }
+        manifestFile.text = XmlUtil.serialize(node)
     }
 
-    void writeLine(String path, String oldStr, String newStr) {
-        File f = new File(path)
-
-        StringBuilder builder = new StringBuilder()
-        f.eachLine { line ->
-            if (line.contains("\$") && oldStr.contains("\$")) {
-                oldStr = oldStr.replaceAll("\\\$", "inner")
-                line = line.replaceAll("\\\$", "inner").replaceAll(oldStr, newStr)
-            } else {
-                line = line.replaceAll(oldStr, newStr)
-            }
-            builder.append(line);
-            builder.append("\n")
-        }
-
-        f.delete()
-        f << builder.toString()
-    }
-
-    String getResPath(String layout) {
+    File getResDir() {
         if (project.android.dataBinding.enabled) {
-            return "${project.buildDir.absolutePath}/intermediates/data-binding-layout-out/${getSubResPath()}/${layout.substring("res/".length())}"
+            return project.file("build/intermediates/data-binding-layout-out/${apkVariant.dirName}/layout")
         }
-        return "${project.buildDir.absolutePath}/intermediates/res/merged/${getSubResPath()}/${layout.substring("res/".length())}"
+        return project.file("build/intermediates/res/merged/${apkVariant.dirName}/layout")
     }
 
-    String getMenuPath() {
+    File getMenuDir() {
         if (project.android.dataBinding.enabled) {
-            "${project.buildDir.absolutePath}/intermediates/data-binding-layout-out/${getSubResPath()}/menu"
+            return project.file("build/intermediates/data-binding-layout-out/${apkVariant.dirName}/menu")
         }
-        return "${project.buildDir.absolutePath}/intermediates/res/merged/${getSubResPath()}/menu"
-    }
-
-    String getSubResPath() {
-        String subPath
-        if (apkVariant.flavorName == null) {
-            subPath = apkVariant.buildType.name
-        } else {
-            subPath = "${apkVariant.flavorName}/${apkVariant.buildType.name}"
-        }
-        return subPath
+        return project.file("build/intermediates/res/merged/${apkVariant.dirName}/menu")
     }
 }
