@@ -25,7 +25,18 @@ apply plugin: 'me.ele.mess'
 
 ```
 
-that's all, just simple as that
+In some cases, you want to ignore some proguard configuration provided by aar. E.g. latest butterknife is an aar which contains proguard.txt, so users do not need to configure its proguard manually.
+However, we would like to still obfuscate classes used with Butterknife. So we provide an extension for such scenario.
+
+```groovy
+mess {
+    ignoreProguard 'com.jakewharton:butterknife'
+}
+```
+
+As a result, the butterknife's proguard configuration will be ignored. And those activities, views, fragments will be obfuscated by Mess.
+
+That's all, just simple as that
 
 ## Note
 As almost every Android project uses [Butterknife](jakewharton.github.io/butterknife) for view injection. And Butterknife has its own proguard rules which keeps every class using Butterknife. As as result, almost every android activity, fragment, custom view would be kept. And out Mess plugin is useless.

@@ -28,6 +28,8 @@
 -ignorewarnings #忽略警告
 -repackageclasses me.ele
 
+-keep class !me.ele.**, !retrofit2.**{*;}
+
 # 保留签名，解决泛型、类型转换的问题
 -keepattributes Signature
 -keepattributes Exceptions
