@@ -9,9 +9,12 @@ class MessPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
+        MessExtension ext = project.extensions.create("mess", MessExtension.class)
+
         project.afterEvaluate {
             project.plugins.withId('com.android.application') {
                 project.android.applicationVariants.all { ApkVariant variant ->
+
                     variant.outputs.each { BaseVariantOutput output ->
 
                         String taskName = "transformClassesAndResourcesWithProguardFor${variant.name.capitalize()}"
@@ -37,6 +40,12 @@ class MessPlugin implements Plugin<Project> {
                             components = retrieveTask.getComponents()
                         }
 
+                        proguardTask.doFirst {
+                            ext.ignoreProguardComponents.each { String component ->
+                                Util.hideProguardTxt(project, component)
+                            }
+                        }
+
                         proguardTask.doLast {
                             RewriteComponentTask rewriteTask = project.tasks.create(name: "rewriteComponentFor${variant.name.capitalize()}",
                                     type: RewriteComponentTask
@@ -46,6 +55,12 @@ class MessPlugin implements Plugin<Project> {
                                 allComponents = components
                             }
                             rewriteTask.execute()
+                        }
+
+                        proguardTask.doLast {
+                            ext.ignoreProguardComponents.each { String component ->
+                                Util.recoverProguardTxt(project, component)
+                            }
                         }
                     }
                 }
