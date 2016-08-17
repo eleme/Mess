@@ -16,6 +16,6 @@ public class MyAdapter extends RecyclerView.Adapter<MyVH> {
   }
 
   @Override public int getItemCount() {
-    return 10;
+    return 100;
   }
 }

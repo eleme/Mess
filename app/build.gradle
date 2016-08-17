@@ -47,4 +47,5 @@ dependencies {
 
 mess {
 //    ignoreProguard 'com.jakewharton:butterknife'
+    ignoreProguard 'com.android.support:recyclerview-v7'
 }

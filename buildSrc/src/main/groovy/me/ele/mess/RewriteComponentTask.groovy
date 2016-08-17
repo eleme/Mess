@@ -3,6 +3,7 @@ package me.ele.mess
 import com.android.build.gradle.api.ApkVariant
 import com.android.build.gradle.api.BaseVariantOutput
 import com.android.build.gradle.tasks.ProcessAndroidResources
+import groovy.io.FileType
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
@@ -37,26 +38,26 @@ class RewriteComponentTask extends DefaultTask {
             if (allComponents.containsKey(k)) {
                 List<String> layouts = allComponents.get(k)
                 layouts.each { layout ->
-                    String realPath
-                    if (layout.startsWith("res")) {
-                        realPath = getResPath(layout)
-                    } else {
-                        realPath = variantOutput.processManifest.manifestOutputFile
+                    if (!layout.startsWith('res')) {
+                        String realPath = variantOutput.processManifest.manifestOutputFile
+                        writeLine(realPath, k, v)
                     }
-                    writeLine(realPath, k, v)
                 }
             }
         }
 
+        File layoutDir = new File(getLayoutPath())
         File menuDir = new File(getMenuPath())
-        if (menuDir.exists()) {
-            map.each { k, v ->
-                menuDir.eachFile { File file ->
-                    boolean hasWritten = false
-                    file.eachLine { String line ->
-                        if (line.contains(k) && !hasWritten) {
-                            hasWritten = true
-                            writeLine(file.absolutePath, k, v)
+        [layoutDir, menuDir].each {File dir ->
+            if (dir.exists()) {
+                map.each { k, v ->
+                    dir.eachFileRecurse(FileType.FILES) { File file ->
+                        boolean hasWritten = false
+                        file.eachLine { String line ->
+                            if (line.contains(k) && !hasWritten) {
+                                hasWritten = true
+                                writeLine(file.absolutePath, k, v)
+                            }
                         }
                     }
                 }
@@ -98,6 +99,13 @@ class RewriteComponentTask extends DefaultTask {
             return "${project.buildDir.absolutePath}/intermediates/data-binding-layout-out/${getSubResPath()}/${layout.substring("res/".length())}"
         }
         return "${project.buildDir.absolutePath}/intermediates/res/merged/${getSubResPath()}/${layout.substring("res/".length())}"
+    }
+
+    String getLayoutPath() {
+        if (project.android.dataBinding.enabled) {
+            return "${project.buildDir.absolutePath}/intermediates/data-binding-layout-out/${getSubResPath()}/layout"
+        }
+        return "${project.buildDir.absolutePath}/intermediates/res/merged/${getSubResPath()}/layout"
     }
 
     String getMenuPath() {
