@@ -32,12 +32,10 @@ class MessPlugin implements Plugin<Project> {
                             }
                             hasProcessResourcesExecuted = true
 
-                            RetrieveComponentTask retrieveTask = project.tasks.create(name: "retrieveComponentFor${variant.name.capitalize()}",
-                                    type: RetrieveComponentTask) {
-                                apkVariant = variant
-                            }
-                            retrieveTask.execute()
-                            components = retrieveTask.getComponents()
+                            def rulesPath = "${project.buildDir.absolutePath}/intermediates/proguard-rules/${variant.dirName}/aapt_rules.txt"
+                            File aaptRules = new File(rulesPath)
+                            aaptRules.delete()
+                            aaptRules << ""
                         }
 
                         proguardTask.doFirst {
@@ -52,7 +50,6 @@ class MessPlugin implements Plugin<Project> {
                             ) {
                                 apkVariant = variant
                                 variantOutput = output
-                                allComponents = components
                             }
                             rewriteTask.execute()
                         }
