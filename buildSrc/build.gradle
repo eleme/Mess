@@ -53,7 +53,7 @@ publishing {
       from components.java
       groupId 'me.ele'
       artifactId 'mess-plugin'
-      version '1.0.4'
+      version '1.0.5'
 
       pom.withXml {
         def root = asNode()
@@ -85,9 +85,8 @@ bintray {
     licenses = ['Apache-2.0']
     vcsUrl = 'https://github.com/bintray/gradle-bintray-plugin.git'
     version {
-      name = '1.0.4'
+      name = '1.0.5'
       attributes = ['gradle-plugin': 'Mess:me.ele:mess-plugin']
     }
   }
 }
-
