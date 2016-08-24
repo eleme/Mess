@@ -18,7 +18,7 @@ class RewriteComponentTask extends DefaultTask {
 
     @TaskAction
     void rewrite() {
-        Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new LinkedHashMap<>();
         File mappingFile = apkVariant.mappingFile
         mappingFile.eachLine { line ->
             if (!line.startsWith(" ")) {
