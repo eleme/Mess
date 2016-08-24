@@ -18,7 +18,7 @@ class RewriteComponentTask extends DefaultTask {
 
     @TaskAction
     void rewrite() {
-        Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new LinkedHashMap<>();
         File mappingFile = apkVariant.mappingFile
         mappingFile.eachLine { line ->
             if (!line.startsWith(" ")) {
@@ -30,6 +30,13 @@ class RewriteComponentTask extends DefaultTask {
                 }
             }
         }
+
+        // sort by key length in case of following scenario:
+        // key1: me.ele.foo -> me.ele.a
+        // key2: me.ele.fooNew -> me.ele.b
+        // if we do not sort by length from long to short,
+        // the key2 will be mapped to, me.ele.aNew
+        map = Util.sortMapping(map)
 
         // AndroidManifest.xml
         map.each { k, v ->

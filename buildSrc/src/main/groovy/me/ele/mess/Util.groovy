@@ -60,4 +60,21 @@ public class Util {
       }
     }
   }
+
+  public static Map<String, String> sortMapping(Map<String, String> map) {
+    List<Map.Entry<String, String>> list = new LinkedList<>(map.entrySet());
+    Collections.sort(list, new Comparator<Map.Entry<String, String>>() {
+      public int compare(Map.Entry<String, String> o1, Map.Entry<String, String> o2) {
+        return o2.key.length() - o1.key.length()
+      }
+    });
+
+    Map<String, String> result = new LinkedHashMap<>();
+    for (Iterator<Map.Entry<String, String>> it = list.iterator(); it.hasNext();) {
+      Map.Entry<String, String> entry = (Map.Entry<String, String>) it.next();
+      result.put(entry.getKey(), entry.getValue());
+    }
+
+    return result;
+  }
 }

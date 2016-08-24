@@ -30,6 +30,12 @@
         android:layout_height="wrap_content"
         android:text="custom view" />
 
+    <me.ele.mess.CustomViewNew
+        android:id="@+id/custom_view_new"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="new custom view" />
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv"
         android:layout_width="match_parent"
