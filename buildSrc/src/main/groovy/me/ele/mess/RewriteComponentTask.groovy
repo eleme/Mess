@@ -84,11 +84,15 @@ class RewriteComponentTask extends DefaultTask {
 
         StringBuilder builder = new StringBuilder()
         f.eachLine { line ->
-            if (line.contains("\$") && oldStr.contains("\$")) {
-                oldStr = oldStr.replaceAll("\\\$", "inner")
-                line = line.replaceAll("\\\$", "inner").replaceAll(oldStr, newStr)
-            } else {
-                line = line.replaceAll(oldStr, newStr)
+            //<me.ele.base.widget.LoadingViewPager -> <me.ele.aaa
+            // app:actionProviderClass="me.ele.base.ui.SearchViewProvider" -> app:actionProviderClass="me.ele.bbv"
+            if (line.contains("<${oldStr}") || line.contains("${oldStr}>") || line.contains("${oldStr}\"")) {
+                if (line.contains("\$") && oldStr.contains("\$")) {
+                    oldStr = oldStr.replaceAll("\\\$", "inner")
+                    line = line.replaceAll("\\\$", "inner").replaceAll(oldStr, newStr)
+                } else {
+                    line = line.replaceAll(oldStr, newStr)
+                }
             }
             builder.append(line);
             builder.append("\n")
