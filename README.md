@@ -25,8 +25,8 @@ apply plugin: 'me.ele.mess'
 
 ```
 
-In some cases, you want to ignore some proguard configuration provided by aar. E.g. latest butterknife is an aar which contains proguard.txt, so users do not need to configure its proguard manually.
-However, we would like to still obfuscate classes used with Butterknife. So we provide an extension for such scenario.
+In some cases, you want to ignore some proguard configuration provided by aar. E.g. latest Butter Knife is an aar which contains proguard.txt, so users do not need to configure its proguard manually.
+However, we would like to still obfuscate classes used with Butter Knife. So we provide an extension for such scenario.
 
 ```groovy
 mess {
@@ -34,14 +34,14 @@ mess {
 }
 ```
 
-As a result, the butterknife's proguard configuration will be ignored. And those activities, views, fragments will be obfuscated by Mess.
+As a result, the Butter Knife's proguard configuration will be ignored. And those activities, views, fragments will be obfuscated by Mess.
 
 That's all, just simple as that
 
 ## Note
-As almost every Android project uses [Butterknife](https://jakewharton.github.io/butterknife/) for view injection. And Butterknife has its own proguard rules which keeps every class using Butterknife. As as result, almost every android activity, fragment, custom view would be kept. And out Mess plugin is useless.
+As almost every Android project uses [Butter Knife](https://jakewharton.github.io/butterknife/) for view injection. And Butter Knife has its own proguard rules which keeps every class using Butter Knife. As as result, almost every android activity, fragment, custom view would be kept. And out Mess plugin is useless.
 
-But good news is that we studied Butterknife source code and figured it out. And the solution is also a gradle plugin [ButterMess](https://github.com/peacepassion/ButterMess) which has been a submodule of this project.
+But good news is that we studied Butter Knife source code and figured it out. And the solution is also a gradle plugin [ButterMess](https://github.com/peacepassion/ButterMess) which has been a submodule of this project.
 
 ## feel free to use, welcome issue and comment
 
