@@ -39,9 +39,9 @@ As a result, the butterknife's proguard configuration will be ignored. And those
 That's all, just simple as that
 
 ## Note
-As almost every Android project uses [Butterknife](jakewharton.github.io/butterknife) for view injection. And Butterknife has its own proguard rules which keeps every class using Butterknife. As as result, almost every android activity, fragment, custom view would be kept. And out Mess plugin is useless.
+As almost every Android project uses [Butterknife](https://jakewharton.github.io/butterknife/) for view injection. And Butterknife has its own proguard rules which keeps every class using Butterknife. As as result, almost every android activity, fragment, custom view would be kept. And out Mess plugin is useless.
 
-But good news is that we studied Butterknife source code and figured it out. And the solution is also a gradle plugin [ButterMess](jakewharton.github.io/butterknife) which has been a submodule of this project.
+But good news is that we studied Butterknife source code and figured it out. And the solution is also a gradle plugin [ButterMess](https://github.com/peacepassion/ButterMess) which has been a submodule of this project.
 
 ## feel free to use, welcome issue and comment
 
