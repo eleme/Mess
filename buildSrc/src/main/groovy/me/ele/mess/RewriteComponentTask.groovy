@@ -7,6 +7,8 @@ import groovy.io.FileType
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
+import proguard.obfuscate.MappingProcessor
+import proguard.obfuscate.MappingReader
 
 class RewriteComponentTask extends DefaultTask {
 
@@ -19,17 +21,25 @@ class RewriteComponentTask extends DefaultTask {
     @TaskAction
     void rewrite() {
         Map<String, String> map = new LinkedHashMap<>();
-        File mappingFile = apkVariant.mappingFile
-        mappingFile.eachLine { line ->
-            if (!line.startsWith(" ")) {
-                String[] keyValue = line.split("->")
-                String key = keyValue[0].trim()
-                String value = keyValue[1].subSequence(0, keyValue[1].length() - 1).trim()
-                if (!key.equals(value)) {
-                    map.put(key, value)
-                }
+        MappingReader reader = new MappingReader(apkVariant.mappingFile)
+        reader.pump(new MappingProcessor() {
+            @Override
+            boolean processClassMapping(String className, String newClassName) {
+                map.put(className, newClassName)
+                return false
             }
-        }
+
+            @Override
+            void processFieldMapping(String className, String fieldType, String fieldName, String newClassName, String newFieldName) {
+
+            }
+
+            @Override
+            void processMethodMapping(String className, int firstLineNumber, int lastLineNumber, String methodReturnType, String methodName, String methodArguments, String newClassName, int newFirstLineNumber, int newLastLineNumber, String newMethodName) {
+
+            }
+        })
+
 
         // sort by key length in case of following scenario:
         // key1: me.ele.foo -> me.ele.a
@@ -124,12 +134,6 @@ class RewriteComponentTask extends DefaultTask {
     }
 
     String getSubResPath() {
-        String subPath
-        if (apkVariant.flavorName == null) {
-            subPath = apkVariant.buildType.name
-        } else {
-            subPath = "${apkVariant.flavorName}/${apkVariant.buildType.name}"
-        }
-        return subPath
+        return apkVariant.getDirName();
     }
 }
