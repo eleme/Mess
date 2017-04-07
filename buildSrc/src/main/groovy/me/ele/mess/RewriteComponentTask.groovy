@@ -54,15 +54,10 @@ class RewriteComponentTask extends DefaultTask {
             writeLine(realPath, k, v)
         }
 
-        // layout and menu xml
         long t0 = System.currentTimeMillis()
-        File layoutDir = new File(getLayoutPath())
-        File menuDir = new File(getMenuPath())
-        // sometimes, we can use a string res for value, e.g app:behavior="@string/my_behavior"
-        // <string name="my_behavior">me.ele.mess.MyBehavior</string>
-        File valueDir = new File(getValuePath())
-        [layoutDir, menuDir, valueDir].each {File dir ->
-            if (dir.exists()) {
+        File resDir = new File(getResPath())
+        resDir.eachFile { File dir ->
+            if (dir.exists() && dir.isDirectory() && isLayoutsDir(dir.name)) {
                 dir.eachFileRecurse(FileType.FILES) { File file ->
                     String orgTxt = file.text
                     String newTxt = orgTxt
@@ -76,7 +71,8 @@ class RewriteComponentTask extends DefaultTask {
                 }
             }
         }
-        println 'write layout and menu xml spend: ' + ((System.currentTimeMillis() - t0)/ 1000) + ' s'
+
+        println 'write layout and menu xml spend: ' + ((System.currentTimeMillis() - t0) / 1000) + ' s'
 
         ProcessAndroidResources processTask = variantOutput.processResources
         processTask.state.executed = false
@@ -112,25 +108,21 @@ class RewriteComponentTask extends DefaultTask {
         f << builder.toString()
     }
 
-    String getLayoutPath() {
+    String getResPath() {
         if (project.android.dataBinding.enabled) {
-            return "${project.buildDir.absolutePath}/intermediates/data-binding-layout-out/${getSubResPath()}/layout"
+            return "${project.buildDir.absolutePath}/intermediates/data-binding-layout-out/${getSubResPath()}"
         }
-        return "${project.buildDir.absolutePath}/intermediates/res/merged/${getSubResPath()}/layout"
+        return "${project.buildDir.absolutePath}/intermediates/res/merged/${getSubResPath()}"
     }
 
-    String getMenuPath() {
-        if (project.android.dataBinding.enabled) {
-            "${project.buildDir.absolutePath}/intermediates/data-binding-layout-out/${getSubResPath()}/menu"
+    boolean isLayoutsDir(String name) {
+        // layout and menu xml
+        // sometimes, we can use a string res for value, e.g app:behavior="@string/my_behavior"
+        // <string name="my_behavior">me.ele.mess.MyBehavior</string>
+        if (name.startsWith("layout") || name.startsWith("menu") || name.startsWith("values")) {
+            return true
         }
-        return "${project.buildDir.absolutePath}/intermediates/res/merged/${getSubResPath()}/menu"
-    }
-
-    String getValuePath() {
-        if (project.android.dataBinding.enabled) {
-            return "${project.buildDir.absolutePath}/intermediates/data-binding-layout-out/${getSubResPath()}/values"
-        }
-        return "${project.buildDir.absolutePath}/intermediates/res/merged/${getSubResPath()}/values"
+        return false
     }
 
     String getSubResPath() {
