@@ -34,6 +34,10 @@ public class Util {
       String getClassifier() {
         return null
       }
+
+      String getVersionlessId() {
+        return null
+      }
     }
   }
 

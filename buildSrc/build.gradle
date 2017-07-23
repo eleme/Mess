@@ -53,7 +53,7 @@ publishing {
       from components.java
       groupId 'me.ele'
       artifactId 'mess-plugin'
-      version '1.0.7'
+      version '1.1.0'
 
       pom.withXml {
         def root = asNode()
@@ -70,23 +70,31 @@ dependencies {
   compile fileTree(include: ['*.jar'], dir: 'libs')
   compile gradleApi()
   compile localGroovy()
-  compile 'com.android.tools.build:gradle:2.1.0'
+  compile 'com.android.tools.build:gradle:2.3.3'
 }
 
 
-bintray {
-  user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
-  key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
-  publications = ['MyPublication']
-  pkg {
-    repo = 'maven'
-    name = 'Mess'
-    userOrg = 'jackcho'
-    licenses = ['Apache-2.0']
-    vcsUrl = 'https://github.com/bintray/gradle-bintray-plugin.git'
-    version {
-      name = '1.0.7'
-      attributes = ['gradle-plugin': 'Mess:me.ele:mess-plugin']
+try {
+  Properties properties = new Properties()
+  properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+  bintray {
+    user = properties.getProperty("bintrayUser")
+    key = properties.getProperty("bintrayApiKey")
+    publications = ['MyPublication']
+    pkg {
+      repo = 'maven'
+      name = 'Mess'
+      userOrg = 'jackcho'
+      licenses = ['Apache-2.0']
+      vcsUrl = 'https://github.com/bintray/gradle-bintray-plugin.git'
+      version {
+        name = '1.1.0'
+        attributes = ['gradle-plugin': 'Mess:me.ele:mess-plugin']
+      }
     }
   }
+} catch (Exception e) {
+  println e.toString()
 }
+
