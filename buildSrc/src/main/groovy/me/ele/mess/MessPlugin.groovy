@@ -23,8 +23,6 @@ class MessPlugin implements Plugin<Project> {
                             return
                         }
 
-                        Map<String, List<String>> components
-
                         boolean hasProcessResourcesExecuted = false
                         output.processResources.doLast {
                             if (hasProcessResourcesExecuted) {
@@ -35,16 +33,19 @@ class MessPlugin implements Plugin<Project> {
                             def rulesPath = "${project.buildDir.absolutePath}/intermediates/proguard-rules/${variant.dirName}/aapt_rules.txt"
                             File aaptRules = new File(rulesPath)
                             aaptRules.delete()
+                            aaptRules.createNewFile()
                             aaptRules << ""
                         }
 
                         proguardTask.doFirst {
+                            println "start ignore proguard components"
                             ext.ignoreProguardComponents.each { String component ->
                                 Util.hideProguardTxt(project, component)
                             }
                         }
 
                         proguardTask.doLast {
+                            println "proguard finish, ready to execute rewrite"
                             RewriteComponentTask rewriteTask = project.tasks.create(name: "rewriteComponentFor${variant.name.capitalize()}",
                                     type: RewriteComponentTask
                             ) {

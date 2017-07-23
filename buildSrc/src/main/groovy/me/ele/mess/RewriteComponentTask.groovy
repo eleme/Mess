@@ -10,6 +10,8 @@ import org.gradle.api.tasks.TaskAction
 import proguard.obfuscate.MappingProcessor
 import proguard.obfuscate.MappingReader
 
+import java.lang.reflect.Field
+
 class RewriteComponentTask extends DefaultTask {
 
     @Input
@@ -20,6 +22,8 @@ class RewriteComponentTask extends DefaultTask {
 
     @TaskAction
     void rewrite() {
+        println "start rewrite task"
+
         Map<String, String> map = new LinkedHashMap<>();
         MappingReader reader = new MappingReader(apkVariant.mappingFile)
         reader.pump(new MappingProcessor() {
@@ -74,15 +78,21 @@ class RewriteComponentTask extends DefaultTask {
 
         println 'write layout and menu xml spend: ' + ((System.currentTimeMillis() - t0) / 1000) + ' s'
 
-        ProcessAndroidResources processTask = variantOutput.processResources
-        processTask.state.executed = false
-        processTask.execute()
 
-        def shrinkResourcesTask = project.tasks.findByName("transformClassesWithShrinkResFor${apkVariant.name.capitalize()}")
-        if (shrinkResourcesTask) {
-            shrinkResourcesTask.state.executed = false
-            shrinkResourcesTask.execute()
+        ProcessAndroidResources processAndroidResourcesTask = variantOutput.processResources
+        try {
+            //this is for Android gradle 2.3.3 & above
+            Field outcomeField = processAndroidResourcesTask.state.getClass().getDeclaredField("outcome")
+            outcomeField.setAccessible(true)
+            outcomeField.set(processAndroidResourcesTask.state, null)
+        } catch (Throwable e) {
+            processAndroidResourcesTask.state.executed = false
         }
+        processAndroidResourcesTask.execute()
+
+        println "execute process resources again"
+
+        println "end rewrite task"
     }
 
     void writeLine(String path, String oldStr, String newStr) {
