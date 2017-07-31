@@ -11,8 +11,11 @@ import proguard.obfuscate.MappingProcessor
 import proguard.obfuscate.MappingReader
 
 import java.lang.reflect.Field
+import java.nio.charset.StandardCharsets
 
 class RewriteComponentTask extends DefaultTask {
+
+    static final String CHARSET = StandardCharsets.UTF_8.name()
 
     @Input
     ApkVariant apkVariant
@@ -63,14 +66,14 @@ class RewriteComponentTask extends DefaultTask {
         resDir.eachFile { File dir ->
             if (dir.exists() && dir.isDirectory() && isLayoutsDir(dir.name)) {
                 dir.eachFileRecurse(FileType.FILES) { File file ->
-                    String orgTxt = file.text
+                    String orgTxt = file.getText(CHARSET)
                     String newTxt = orgTxt
                     map.each { k, v ->
                         newTxt = newTxt.replace(k, v)
                     }
                     if (newTxt != orgTxt) {
                         println 'rewrite file: ' + file.absolutePath
-                        file.text = newTxt
+                        file.setText(newTxt, CHARSET)
                     }
                 }
             }
