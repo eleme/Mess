@@ -108,6 +108,10 @@ class RewriteComponentTask extends DefaultTask {
             if (line.contains("<${oldStr}") || line.contains("${oldStr}>") || line.contains("${oldStr}\"")) {
                 if (line.contains("\$") && oldStr.contains("\$")) {
                     oldStr = oldStr.replaceAll("\\\$", "inner")
+                    if (newStr.contains("\$")) {
+                        // if newStr contains $, replace it or escape it
+                        newStr = newStr.replaceAll("\\\$", "inner")
+                    }
                     line = line.replaceAll("\\\$", "inner").replaceAll(oldStr, newStr)
                 } else {
                     line = line.replaceAll(oldStr, newStr)
