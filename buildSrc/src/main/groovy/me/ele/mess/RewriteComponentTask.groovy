@@ -118,7 +118,10 @@ class RewriteComponentTask extends DefaultTask {
         }
 
         f.delete()
-        f << builder.toString()
+        f.withWriter(CHARSET) { writer ->
+            writer.write(builder.toString())
+        }
+        // f << builder.toString()
     }
 
     String getResPath() {
