@@ -55,3 +55,7 @@
     java.lang.Object readResolve();
 }
 
+-keep class me.ele.mess.TestService$InnerService {
+   *;
+}
+

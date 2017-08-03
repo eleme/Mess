@@ -22,6 +22,7 @@
             android:name=".booking.ui.checkout.invoice.InvoiceEditActivity"
             android:screenOrientation="portrait"
             />
+        <service android:name=".TestService$InnerService"/>
     </application>
 
 </manifest>

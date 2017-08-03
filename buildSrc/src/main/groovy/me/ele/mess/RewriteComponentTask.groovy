@@ -47,7 +47,6 @@ class RewriteComponentTask extends DefaultTask {
             }
         })
 
-
         // sort by key length in case of following scenario:
         // key1: me.ele.foo -> me.ele.a
         // key2: me.ele.fooNew -> me.ele.b
@@ -106,12 +105,10 @@ class RewriteComponentTask extends DefaultTask {
             //<me.ele.base.widget.LoadingViewPager -> <me.ele.aaa
             // app:actionProviderClass="me.ele.base.ui.SearchViewProvider" -> app:actionProviderClass="me.ele.bbv"
             if (line.contains("<${oldStr}") || line.contains("${oldStr}>") || line.contains("${oldStr}\"")) {
-                if (line.contains("\$") && oldStr.contains("\$")) {
-                    oldStr = oldStr.replaceAll("\\\$", "inner")
-                    line = line.replaceAll("\\\$", "inner").replaceAll(oldStr, newStr)
-                } else {
-                    line = line.replaceAll(oldStr, newStr)
-                }
+                oldStr = URLEncoder.encode(oldStr, CHARSET)
+                newStr = URLEncoder.encode(newStr, CHARSET)
+                line = URLEncoder.encode(line, CHARSET)
+                line = URLDecoder.decode(line.replaceAll(oldStr, newStr), CHARSET)
             }
             builder.append(line);
             builder.append("\n")
@@ -121,7 +118,6 @@ class RewriteComponentTask extends DefaultTask {
         f.withWriter(CHARSET) { writer ->
             writer.write(builder.toString())
         }
-        // f << builder.toString()
     }
 
     String getResPath() {

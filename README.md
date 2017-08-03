@@ -17,7 +17,7 @@
 ```groovy
 dependencies {
    ...
-   classpath 'me.ele:mess-plugin:1.1.2'
+   classpath 'me.ele:mess-plugin:1.1.3'
  }
   
 apply plugin: 'com.android.library'
