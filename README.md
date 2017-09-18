@@ -17,7 +17,7 @@
 ```groovy
 dependencies {
    ...
-   classpath 'me.ele:mess-plugin:1.1.3'
+   classpath 'me.ele:mess-plugin:1.1.4'
  }
   
 apply plugin: 'com.android.library'
@@ -33,6 +33,8 @@ mess {
     ignoreProguard 'com.jakewharton:butterknife'
 }
 ```
+
+If you are using AAPT2, please disable AAPT2 by setting `android.enableAapt2=false` in your gradle.properties file.
 
 As a result, the Butter Knife's proguard configuration will be ignored. And those activities, views, fragments will be obfuscated by Mess.
 
