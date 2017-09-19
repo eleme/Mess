@@ -56,13 +56,16 @@ class RewriteComponentTask extends DefaultTask {
 
         // AndroidManifest.xml
         map.each { k, v ->
-            String realPath = variantOutput.processManifest.manifestOutputFile
+            String realPath = "${project.buildDir.absolutePath}/intermediates/manifests/full/${getSubResPath()}/AndroidManifest.xml"
             writeLine(realPath, k, v)
         }
 
         long t0 = System.currentTimeMillis()
         File resDir = new File(getResPath())
         resDir.eachFile { File dir ->
+            if (dir.isFile() && dir.name.endsWith(".flat")) {
+                throw new Exception("please disable AAPT2 by setting `android.enableAapt2=false` in your gradle.properties file.")
+            }
             if (dir.exists() && dir.isDirectory() && isLayoutsDir(dir.name)) {
                 dir.eachFileRecurse(FileType.FILES) { File file ->
                     String orgTxt = file.getText(CHARSET)
