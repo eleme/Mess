@@ -124,10 +124,20 @@ class RewriteComponentTask extends DefaultTask {
     }
 
     String getResPath() {
+        String resPath = "${project.buildDir.absolutePath}/intermediates/res/merged/${getSubResPath()}"
         if (project.android.dataBinding.enabled) {
-            return "${project.buildDir.absolutePath}/intermediates/data-binding-layout-out/${getSubResPath()}"
+
+            project.rootProject.buildscript.configurations.classpath.resolvedConfiguration.firstLevelModuleDependencies.each {
+                if (it.moduleGroup == "com.android.tools.build" && it.moduleName == "gradle") {
+                    if (it.moduleVersion.startsWith("1") || it.moduleVersion.startsWith("2")) {
+                        resPath = "${project.buildDir.absolutePath}/intermediates/data-binding-layout-out/${getSubResPath()}"
+                        return
+                    }
+                }
+            }
+
         }
-        return "${project.buildDir.absolutePath}/intermediates/res/merged/${getSubResPath()}"
+        return resPath
     }
 
     boolean isLayoutsDir(String name) {
