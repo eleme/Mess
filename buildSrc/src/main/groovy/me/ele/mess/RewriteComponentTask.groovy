@@ -3,6 +3,7 @@ package me.ele.mess
 import com.android.build.gradle.api.ApkVariant
 import com.android.build.gradle.api.BaseVariantOutput
 import com.android.build.gradle.tasks.ProcessAndroidResources
+import com.android.ide.common.xml.AndroidManifestParser
 import groovy.io.FileType
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
@@ -27,7 +28,15 @@ class RewriteComponentTask extends DefaultTask {
     void rewrite() {
         println "start rewrite task"
 
-        Map<String, String> map = new LinkedHashMap<>();
+        // use sort map in case of following scenario:
+        // key1: me.ele.foo -> me.ele.a
+        // key2: me.ele.fooNew -> me.ele.b
+        // if we do not sort by length from long to short,
+        // the key2 will be mapped to, me.ele.aNew
+        Map<String, String> map = new TreeMap<>({pre, next ->
+                def i = next.length() - pre.length()
+                i != 0 ? i : 1
+        })
         MappingReader reader = new MappingReader(apkVariant.mappingFile)
         reader.pump(new MappingProcessor() {
             @Override
@@ -46,13 +55,6 @@ class RewriteComponentTask extends DefaultTask {
 
             }
         })
-
-        // sort by key length in case of following scenario:
-        // key1: me.ele.foo -> me.ele.a
-        // key2: me.ele.fooNew -> me.ele.b
-        // if we do not sort by length from long to short,
-        // the key2 will be mapped to, me.ele.aNew
-        map = Util.sortMapping(map)
 
         // AndroidManifest.xml
         map.each { k, v ->
