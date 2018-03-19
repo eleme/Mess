@@ -47,18 +47,21 @@ class RewriteComponentTask extends DefaultTask {
             }
         })
 
-        // sort by key length in case of following scenario:
-        // key1: me.ele.foo -> me.ele.a
-        // key2: me.ele.fooNew -> me.ele.b
-        // if we do not sort by length from long to short,
-        // the key2 will be mapped to, me.ele.aNew
-        map = Util.sortMapping(map)
-
         // AndroidManifest.xml
-        map.each { k, v ->
-            String realPath = "${project.buildDir.absolutePath}/intermediates/manifests/full/${getSubResPath()}/AndroidManifest.xml"
-            writeLine(realPath, k, v)
+        String realPath = "${project.buildDir.absolutePath}/intermediates/manifests/full/${getSubResPath()}/AndroidManifest.xml"
+        def f = new File(realPath)
+        def parser = new XmlParser(false, false).parse(f)
+        parser.application.each {
+            if (map.containsKey(it.@"android:name")) {
+                it.@"android:name" = map.get(it.@"android:name")
+            }
+            it.children().each {
+                if (map.containsKey(it.@"android:name")) {
+                    it.@"android:name" = map.get(it.@"android:name")
+                }
+            }
         }
+        new XmlNodePrinter(new PrintWriter(new FileWriter(f))).print(parser)
 
         long t0 = System.currentTimeMillis()
         File resDir = new File(getResPath())
@@ -98,29 +101,6 @@ class RewriteComponentTask extends DefaultTask {
         println "execute process resources again"
 
         println "end rewrite task"
-    }
-
-    void writeLine(String path, String oldStr, String newStr) {
-        File f = new File(path)
-
-        StringBuilder builder = new StringBuilder()
-        f.eachLine { line ->
-            //<me.ele.base.widget.LoadingViewPager -> <me.ele.aaa
-            // app:actionProviderClass="me.ele.base.ui.SearchViewProvider" -> app:actionProviderClass="me.ele.bbv"
-            if (line.contains("<${oldStr}") || line.contains("${oldStr}>") || line.contains("${oldStr}\"")) {
-                oldStr = URLEncoder.encode(oldStr, CHARSET)
-                newStr = URLEncoder.encode(newStr, CHARSET)
-                line = URLEncoder.encode(line, CHARSET)
-                line = URLDecoder.decode(line.replaceAll(oldStr, newStr), CHARSET)
-            }
-            builder.append(line);
-            builder.append("\n")
-        }
-
-        f.delete()
-        f.withWriter(CHARSET) { writer ->
-            writer.write(builder.toString())
-        }
     }
 
     String getResPath() {
