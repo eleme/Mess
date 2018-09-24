@@ -1,9 +1,14 @@
 package me.ele.mess
 
-import com.android.build.gradle.api.ApkVariant
+import com.android.build.gradle.api.ApplicationVariant
 import com.android.build.gradle.api.BaseVariantOutput
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.ArtifactCollection
+
+import static com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactScope.EXTERNAL
+import static com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType.CLASSES
+import static com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH
 
 class MessPlugin implements Plugin<Project> {
 
@@ -13,7 +18,14 @@ class MessPlugin implements Plugin<Project> {
 
         project.afterEvaluate {
             project.plugins.withId('com.android.application') {
-                project.android.applicationVariants.all { ApkVariant variant ->
+                project.android.applicationVariants.all { ApplicationVariant variant ->
+
+                    def artifactMap = [:]
+                    ArtifactCollection artifactCollection = variant.variantData.scope.getArtifactCollection(
+                            RUNTIME_CLASSPATH, EXTERNAL, CLASSES)
+                    artifactCollection.artifacts.each {
+                        artifactMap.put(it.id.componentIdentifier.displayName, it.file)
+                    }
 
                     variant.outputs.each { BaseVariantOutput output ->
 
@@ -40,7 +52,7 @@ class MessPlugin implements Plugin<Project> {
                         proguardTask.doFirst {
                             println "start ignore proguard components"
                             ext.ignoreProguardComponents.each { String component ->
-                                Util.hideProguardTxt(project, component)
+                                Util.hideProguardTxt((artifactMap.get(component) as File).parentFile.parentFile)
                             }
                         }
 
@@ -57,7 +69,7 @@ class MessPlugin implements Plugin<Project> {
 
                         proguardTask.doLast {
                             ext.ignoreProguardComponents.each { String component ->
-                                Util.recoverProguardTxt(project, component)
+                                Util.recoverProguardTxt((artifactMap.get(component) as File).parentFile.parentFile)
                             }
                         }
                     }

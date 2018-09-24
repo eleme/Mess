@@ -10,6 +10,7 @@ buildscript {
 allprojects {
   repositories {
     jcenter()
+    google()
   }
   apply plugin: 'maven'
   apply plugin: 'maven-publish'
@@ -67,10 +68,9 @@ publishing {
 }
 
 dependencies {
-  compile fileTree(include: ['*.jar'], dir: 'libs')
-  compile gradleApi()
-  compile localGroovy()
-  compile 'com.android.tools.build:gradle:2.3.3'
+  implementation gradleApi()
+  implementation localGroovy()
+  implementation 'com.android.tools.build:gradle:3.0.1'
 }
 
 
