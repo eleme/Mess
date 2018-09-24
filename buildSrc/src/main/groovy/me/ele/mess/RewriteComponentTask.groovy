@@ -86,7 +86,6 @@ class RewriteComponentTask extends DefaultTask {
 
         ProcessAndroidResources processAndroidResourcesTask = variantOutput.processResources
         try {
-            //this is for Android gradle 2.3.3 & above
             Field outcomeField = processAndroidResourcesTask.state.getClass().getDeclaredField("outcome")
             outcomeField.setAccessible(true)
             outcomeField.set(processAndroidResourcesTask.state, null)
