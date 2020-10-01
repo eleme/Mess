@@ -45,6 +45,6 @@ As almost every Android project uses [Butter Knife](https://jakewharton.github.i
 
 But good news is that we studied Butter Knife source code and figured it out. And the solution is also a gradle plugin [ButterMess](https://github.com/peacepassion/ButterMess) which has been a submodule of this project.
 
-## feel free to use, welcome issue and comment
+## feel free to use, welcome issue and comments
 
 
